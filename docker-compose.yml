@@ -1,0 +1,67 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: website-backend
+    restart: unless-stopped
+    env_file: .env
+    # environment:
+    #   - MONGO_USERNAME=$MONGO_USERNAME
+    #   - MONGO_PASSWORD=$MONGO_PASSWORD
+    #   - MONGO_HOSTNAME=db
+    #   - MONGO_PORT=$MONGO_PORT
+    #   - MONGO_DB=$MONGO_DB
+    volumes:
+      - .:/home/node/app
+      # - node_modules:/home/node/app/node_modules
+    ports:
+      - 80:8080
+    networks:
+      - app-network
+    # # command: bash -c /usr/src/app/start.sh
+    # # command: bash -c /usr/src/app/config/start.sh
+    # command: /home/node/app/node_modules/.bin/nodemon app.js
+    command: tsx watch src/app.ts
+
+  mongo:
+    image: mongo:4.1.8-xenial
+    container_name: mongodb
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGO_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASSWORD
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+
+  # postgres:
+  #   image: postgres:16
+  #   container_name: simple_wallet
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: ${PG_USER}
+  #     POSTGRES_PASSWORD: ${PG_PASSWORD}
+  #     POSTGRES_DB: ${PG_DB}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U ${PG_USER}"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  # node_modules:
+  # postgres_data:

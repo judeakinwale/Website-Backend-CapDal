@@ -1,0 +1,27 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Login to Azure Container Registry using Docker
+        run: docker login ${{ secrets.OS_REG_USERNAME }}.azurecr.io --username ${{ secrets.OS_REG_USERNAME }} --password ${{ secrets.OS_REG_PASSWORD }}
+
+      - name: Build the Docker image
+        #       run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+        run: docker build . --file Dockerfile --tag lbanblogapi
+
+      - name: Tag the Docker Image
+        run: docker tag lbanblogapi ${{ secrets.OS_REG_USERNAME }}.azurecr.io/lbanblogapi
+
+      - name: Push the Docker Image to Azure Container Registry
+        run: docker push ${{ secrets.OS_REG_USERNAME }}.azurecr.io/lbanblogapi

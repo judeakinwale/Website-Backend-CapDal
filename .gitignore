@@ -1,0 +1,9 @@
+
+**/*.env*
+bun.lockb
+
+dist/
+node_modules/
+uploads/
+guide/
+setup/
