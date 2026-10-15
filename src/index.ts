@@ -20,6 +20,21 @@ import errorHandler from "./middleware/error";
 
 // import routers
 import certificateRouter from "./modules/cms/routes/certificate.routes";
+import identityRouter from "./modules/cms/routes/identity.routes";
+import timelineRouter from "./modules/cms/routes/timeline.routes";
+import projectCategoryRouter from "./modules/cms/routes/project-category.routes";
+import projectRouter from "./modules/cms/routes/project.routes";
+import sectionRouter from "./modules/cms/routes/section.routes";
+import newsTagRouter from "./modules/cms/routes/news-tag.routes";
+import newsCategoryRouter from "./modules/cms/routes/news-category.routes";
+import newsRouter from "./modules/cms/routes/news.routes";
+import navLinkRouter from "./modules/cms/routes/nav-link.routes";
+import socialLinkRouter from "./modules/cms/routes/social-link.routes";
+import statRouter from "./modules/cms/routes/stat.routes";
+import inquiryRouter from "./modules/cms/routes/inquiry.routes";
+import serviceRouter from "./modules/cms/routes/service.routes";
+import contactInfoRouter from "./modules/cms/routes/contact-info.routes";
+import directorRouter from "./modules/cms/routes/director.routes";
 
 const port = Settings.PORT;
 const allowedOrigins = Settings.ALLOWED?.split(",").map((o) => o?.trim());
@@ -62,6 +77,21 @@ app.use(rateLimit({ windowMs: oneMin, limit: oneMinLimit }));
 // ----- app routes
 // app.use();
 app.use("/api/v1/certificate/", certificateRouter);
+app.use("/api/v1/identity/", identityRouter);
+app.use("/api/v1/timeline/", timelineRouter);
+app.use("/api/v1/project-category/", projectCategoryRouter);
+app.use("/api/v1/project/", projectRouter);
+app.use("/api/v1/section/", sectionRouter);
+app.use("/api/v1/news-tag/", newsTagRouter);
+app.use("/api/v1/news-category/", newsCategoryRouter);
+app.use("/api/v1/news/", newsRouter);
+app.use("/api/v1/nav-link/", navLinkRouter);
+app.use("/api/v1/social-link/", socialLinkRouter);
+app.use("/api/v1/stat/", statRouter);
+app.use("/api/v1/inquiry/", inquiryRouter);
+app.use("/api/v1/service/", serviceRouter);
+app.use("/api/v1/contact-info/", contactInfoRouter);
+app.use("/api/v1/director/", directorRouter);
 
 // ----- error handler
 app.use(errorHandler);
