@@ -29,7 +29,7 @@ export interface User extends DefaultItem {
 }
 
 export interface InternalUser extends User {
-  password: string;
+  password?: string; // only required for account creation
 }
 
 export interface LoginResponse extends User {

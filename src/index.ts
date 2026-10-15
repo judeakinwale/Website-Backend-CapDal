@@ -19,6 +19,7 @@ import path from "node:path";
 import errorHandler from "./middleware/error";
 
 // import routers
+import userRouter from "./modules/cms/routes/user.routes";
 import certificateRouter from "./modules/cms/routes/certificate.routes";
 import identityRouter from "./modules/cms/routes/identity.routes";
 import timelineRouter from "./modules/cms/routes/timeline.routes";
@@ -76,6 +77,7 @@ app.use(rateLimit({ windowMs: oneMin, limit: oneMinLimit }));
 
 // ----- app routes
 // app.use();
+app.use("/api/v1/user/", userRouter);
 app.use("/api/v1/certificate/", certificateRouter);
 app.use("/api/v1/identity/", identityRouter);
 app.use("/api/v1/timeline/", timelineRouter);
