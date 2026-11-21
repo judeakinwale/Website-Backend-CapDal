@@ -17,8 +17,11 @@ export const Settings = {
   MAX_FILE_UPLOAD: process.env.MAX_FILE_UPLOAD,
 
   JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRE: process.env.JWT_EXPIRE,
-  JWT_COOKIE_EXPIRE: process.env.JWT_COOKIE_EXPIRE,
+  JWT_EXPIRE: process.env.JWT_EXPIRE || "1d", // strings like '15m', '2h', '7d' or timestamp in seconds (for jose)
+  JWT_COOKIE_EXPIRE: process.env.JWT_COOKIE_EXPIRE || "30m", // same as for JWT_EXPIRE
+  JWT_ALGORITHM: process.env.JWT_ALGORITHM || "HS256",
+  JWT_ISSUER: process.env.JWT_ISSUER,
+  JWT_AUDIENCE: process.env.JWT_AUDIENCE,
 
   LOGO_URL: process.env.LOGO_URL,
 

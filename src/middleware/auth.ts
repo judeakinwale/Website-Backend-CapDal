@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import asyncHandler from "./async";
 import { BaseUser, UserRole } from "../types/user";
 import ErrorResponse from "../utils/errorResponse";
-import { jwtVerify } from "jose";
+import { JWTPayload, jwtVerify } from "jose";
 import { Settings } from "../config/settings";
 
 const getToken = (req: Request): string => {
@@ -17,19 +17,30 @@ const getToken = (req: Request): string => {
   return token;
 };
 
+const decodeToken = async (token: string): Promise<BaseUser & JWTPayload> => {
+  // // using jsonwebtoken
+  // const decoded = jwt.verify(token, Settings.JWT_SECRET)
+
+  // convert JWT_SECRET string to Uint8Array
+  const secretKey = new TextEncoder().encode(Settings.JWT_SECRET);
+  const decoded = await jwtVerify<BaseUser>(token, secretKey);
+
+  return decoded.payload; // for express 5; immutable req;
+};
+
+const getTokenUser = async (req: Request): Promise<BaseUser> => {
+  const token = getToken(req);
+  const user = await decodeToken(token);
+  return user;
+};
+
 export const protect = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const token = getToken(req);
 
-    // // using jsonwebtoken
-    // const decoded = jwt.verify(token, Settings.JWT_SECRET)
-
     try {
-      // convert JWT_SECRET string to Uint8Array
-      const secretKey = new TextEncoder().encode(Settings.JWT_SECRET);
-      const decoded = await jwtVerify<BaseUser>(token, secretKey);
-
-      res.locals.user = decoded; // for express 5; immutable req
+      const user = await decodeToken(token);
+      res.locals.user = await decodeToken(token);
     } catch (error) {
       throw new ErrorResponse(`[Auth] Not authorized`);
     }
