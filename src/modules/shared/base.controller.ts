@@ -12,7 +12,7 @@ export class BaseController<T extends DefaultItem> {
     this.service = service;
   }
 
-  parseUserFromRes = (res: Response): BaseUser | undefined => {
+  static parseUserFromRes = (res: Response): BaseUser | undefined => {
     const user: BaseUser | undefined = res.locals.user;
     return user;
   };
@@ -53,7 +53,7 @@ export class BaseController<T extends DefaultItem> {
 
   create = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      const user = this.parseUserFromRes(res);
+      const user = BaseController.parseUserFromRes(res);
 
       const resp = await this.service.create(req.body, user);
 
@@ -66,7 +66,7 @@ export class BaseController<T extends DefaultItem> {
       const id = BaseController.parseReqParam(req.params.id);
       const filter = BaseController.parseReqQuery(req.query);
       const upsert = req.query.upsert === "true" && !id && !!filter;
-      const user = this.parseUserFromRes(res);
+      const user = BaseController.parseUserFromRes(res);
 
       const resp = await this.service.update(
         req.body,
@@ -84,7 +84,7 @@ export class BaseController<T extends DefaultItem> {
     async (req: Request, res: Response, next: NextFunction) => {
       const id = BaseController.parseReqParam(req.params.id);
       const filter = BaseController.parseReqQuery(req.query);
-      const user = this.parseUserFromRes(res);
+      const user = BaseController.parseUserFromRes(res);
 
       const resp = await this.service.delete(id, filter, user);
 

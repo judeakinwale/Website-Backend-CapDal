@@ -1,7 +1,7 @@
 export interface DefaultItem {
   id?: string;
 
-  title: string;
+  title?: string;
   value?: string;
 
   order?: number;
