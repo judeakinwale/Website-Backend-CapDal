@@ -4,6 +4,7 @@ import { BaseService } from "./base.service";
 import { QueryFilter } from "./model.repository";
 import { DefaultItem } from "../../types/default";
 import { BaseUser } from "../../types/user";
+import { APIResponse } from "./base.dto";
 
 export class BaseController<T extends DefaultItem> {
   private service: BaseService<T>;
@@ -34,8 +35,13 @@ export class BaseController<T extends DefaultItem> {
   find = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       const filter = BaseController.parseReqQuery(req.query);
-      const resp = await this.service.find(filter);
+      const items = await this.service.find(filter);
 
+      const resp: APIResponse = {
+        success: true,
+        data: items,
+        count: items.length,
+      };
       res.status(200).json(resp);
     },
   );
@@ -45,8 +51,12 @@ export class BaseController<T extends DefaultItem> {
       const id = BaseController.parseReqParam(req.params.id);
       const filter = BaseController.parseReqQuery(req.query);
 
-      const resp = await this.service.findOne(id, filter);
+      const item = await this.service.findOne(id, filter);
 
+      const resp: APIResponse = {
+        success: true,
+        data: item,
+      };
       res.status(200).json(resp);
     },
   );
@@ -55,8 +65,12 @@ export class BaseController<T extends DefaultItem> {
     async (req: Request, res: Response, next: NextFunction) => {
       const user = BaseController.parseUserFromRes(res);
 
-      const resp = await this.service.create(req.body, user);
+      const created = await this.service.create(req.body, user);
 
+      const resp: APIResponse = {
+        success: true,
+        data: created,
+      };
       res.status(201).json(resp);
     },
   );
@@ -68,7 +82,7 @@ export class BaseController<T extends DefaultItem> {
       const upsert = req.query.upsert === "true" && !id && !!filter;
       const user = BaseController.parseUserFromRes(res);
 
-      const resp = await this.service.update(
+      const updated = await this.service.update(
         req.body,
         id,
         filter,
@@ -76,6 +90,10 @@ export class BaseController<T extends DefaultItem> {
         user,
       );
 
+      const resp: APIResponse = {
+        success: true,
+        data: updated,
+      };
       res.status(200).json(resp);
     },
   );
@@ -86,8 +104,29 @@ export class BaseController<T extends DefaultItem> {
       const filter = BaseController.parseReqQuery(req.query);
       const user = BaseController.parseUserFromRes(res);
 
-      const resp = await this.service.delete(id, filter, user);
+      const deleted = await this.service.delete(id, filter, user);
 
+      const resp: APIResponse = {
+        success: true,
+        data: deleted,
+        message: "Delete Successful",
+      };
+      res.status(200).json(resp);
+    },
+  );
+
+  deleteMany = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const filter = BaseController.parseReqQuery(req.query);
+      const user = BaseController.parseUserFromRes(res);
+
+      const deleted = await this.service.deleteMany(filter, user);
+
+      const resp: APIResponse = {
+        success: true,
+        count: deleted.deletedCount,
+        message: "Bulk Delete Successful",
+      };
       res.status(200).json(resp);
     },
   );

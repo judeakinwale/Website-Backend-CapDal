@@ -4,10 +4,10 @@ import ErrorResponse from "../../utils/errorResponse";
 import { updateDocMetadata } from "../../utils/audit.utils";
 import { DefaultItem } from "../../types/default";
 import { BaseUser } from "../../types/user";
-import { APIResponse } from "./base.dto";
 
+// TODO: add audit logic where needed
 export class BaseService<T extends DefaultItem> {
-  private repo: ModelRepository<T>;
+  repo: ModelRepository<T>; // private
   name: string = "Base Service";
 
   constructor(repo: ModelRepository<T>) {
@@ -24,26 +24,21 @@ export class BaseService<T extends DefaultItem> {
 
   private _normalizeId = BaseService.normalizeId;
 
-  private normalizeUserId = (user?: BaseUser): ObjectId | undefined => {
+  normalizeUserId = (user?: BaseUser): ObjectId | undefined => {
     if (!user?.id) return;
     return this._normalizeId(user?.id);
   };
 
-  find = async (filter: QueryFilter<T>): Promise<APIResponse<T[]>> => {
+  find = async (filter: QueryFilter<T>): Promise<T[]> => {
     const items = await this.repo.findAll(filter);
 
-    const response: APIResponse = {
-      success: true,
-      data: items,
-      count: items.length,
-    };
-    return response;
+    return items as T[];
   };
 
   findOne = async (
     id?: ObjectId | string,
     filter?: QueryFilter<T>,
-  ): Promise<APIResponse<T>> => {
+  ): Promise<T> => {
     if (!id && !filter)
       throw new ErrorResponse(
         `[${this.name}] Provide either an id or filter!`,
@@ -56,14 +51,11 @@ export class BaseService<T extends DefaultItem> {
 
     if (!item) throw new ErrorResponse(`[${this.name}] Item not found!`, 404);
 
-    const response: APIResponse = {
-      success: true,
-      data: item,
-    };
-    return response;
+    return item;
   };
 
-  create = async (payload: T, user?: BaseUser): Promise<APIResponse<T>> => {
+  // -----
+  async create(payload: T, user?: BaseUser): Promise<T> {
     const userId = this.normalizeUserId(user);
     payload = updateDocMetadata<T>(payload, userId);
 
@@ -71,20 +63,16 @@ export class BaseService<T extends DefaultItem> {
     if (!created)
       throw new ErrorResponse(`[${this.name}] Error creating item!`, 400);
 
-    const response: APIResponse = {
-      success: true,
-      data: created,
-    };
-    return response;
-  };
+    return created;
+  }
 
-  update = async (
+  async update(
     payload: Partial<T>,
     id?: ObjectId | string,
     filter?: QueryFilter<T>,
     upsert?: boolean,
     user?: BaseUser,
-  ): Promise<APIResponse<T>> => {
+  ): Promise<T> {
     if (!id && !filter)
       throw new ErrorResponse(
         `[${this.name}] Provide either an id or filter!`,
@@ -101,18 +89,15 @@ export class BaseService<T extends DefaultItem> {
     if (!updated)
       throw new ErrorResponse(`[${this.name}] Error updating item!`, 400);
 
-    const response: APIResponse = {
-      success: true,
-      data: updated,
-    };
-    return response;
-  };
+    return updated;
+  }
+  // -----
 
   delete = async (
     id?: ObjectId | string,
     filter?: QueryFilter<T>,
     user?: BaseUser,
-  ): Promise<APIResponse<T>> => {
+  ): Promise<T> => {
     if (!id && !filter)
       throw new ErrorResponse(
         `[${this.name}] Provide either an id or filter!`,
@@ -127,12 +112,7 @@ export class BaseService<T extends DefaultItem> {
     if (!deleted)
       throw new ErrorResponse(`[${this.name}] Error deleting item!`, 400);
 
-    const response: APIResponse = {
-      success: true,
-      data: deleted,
-      message: "Delete Successful",
-    };
-    return response;
+    return deleted;
   };
 
   deleteMany = async (filter?: QueryFilter<T>, user?: BaseUser) => {
@@ -145,11 +125,6 @@ export class BaseService<T extends DefaultItem> {
         400,
       );
 
-    const response: APIResponse = {
-      success: true,
-      count: deleted.deletedCount,
-      message: "Bulk Delete Successful",
-    };
-    return response;
+    return deleted;
   };
 }
