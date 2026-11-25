@@ -29,6 +29,15 @@ const userSchema = new mongoose.Schema<InternalUser>(
       default: [UserRole.User],
     },
     imageUrl: { type: String },
+
+    // -----
+    loginToken: { type: String },
+    loginTokenExpiresAt: { type: Number },
+    resetPasswordToken: { type: String },
+    resetPasswordTokenExpiresAt: { type: Number },
+    activationToken: { type: String },
+    activationTokenExpiresAt: { type: Number },
+    // -----
     ...actorSchemaSnippet,
   },
   timestampOptions,

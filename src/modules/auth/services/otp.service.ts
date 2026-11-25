@@ -1,15 +1,21 @@
 import { randomBytes, randomInt } from "node:crypto";
-import { User } from "../../../types/user";
-import { BaseService } from "../../shared/base.service";
+import { BaseUser, InternalUser, User } from "../../../types/user";
 import ErrorResponse from "../../../utils/errorResponse";
 import UserService from "../../cms/services/user.service";
+import { QueryFilter, UpdateQuery } from "../../shared/model.repository";
 
-export type TokenKeys = "activationToken" | "resetPasswordToken";
+export type TokenKeys = "loginToken" | "activationToken" | "resetPasswordToken";
 export type TokenExpiryKeys =
+  | "loginTokenExpiresAt"
   | "activationTokenExpiresAt"
   | "resetPasswordTokenExpiresAt";
 
-class OTPService<T extends User = User> {
+export enum TokenMode {
+  "alphanumeric" = "alphanumeric",
+  "numeric" = "numeric",
+}
+
+class OTPService<T extends User = InternalUser> {
   userService: UserService;
   tokenKey: TokenKeys;
   private tokenExpiresAtKey: TokenExpiryKeys;
@@ -19,7 +25,7 @@ class OTPService<T extends User = User> {
   constructor(
     userService: UserService,
     tokenKey: TokenKeys,
-    expirySeconds: number = 600,
+    expirySeconds: number = 600, // 5min default
     tokenExpiresAtKey?: TokenExpiryKeys,
     tokenLength: number = 6,
   ) {
@@ -32,7 +38,7 @@ class OTPService<T extends User = User> {
 
   static generateToken = (
     length: number = 6,
-    mode: "alphanumeric" | "numeric" = "alphanumeric",
+    mode: TokenMode = TokenMode.alphanumeric,
   ): string => {
     let token: string;
     switch (mode) {
@@ -50,33 +56,54 @@ class OTPService<T extends User = User> {
   };
 
   // -----
-  updatePayloadWithToken = (token: string, payload: Partial<T>): Partial<T> => {
+  updatePayloadWithToken = (
+    token: string,
+    payload: UpdateQuery<T>,
+  ): UpdateQuery<T> => {
     payload[this.tokenKey] = token;
     payload[this.tokenExpiresAtKey] = Date.now() + this.expiryMs;
     return payload;
   };
 
-  removeTokenFromPayload = (payload: Partial<T>): Partial<T> => {
+  // ? unused ?
+  removeTokenFromPayload = (payload: UpdateQuery<T>): UpdateQuery<T> => {
     payload[this.tokenKey] = undefined;
     payload[this.tokenExpiresAtKey] = undefined;
     return payload;
   };
+
+  getUnsetUpdateQuery = (): UpdateQuery<T> => {
+    const filter = {
+      $set: { [this.tokenKey]: null, [this.tokenExpiresAtKey]: null },
+    };
+    return filter as UpdateQuery<T>;
+  };
   // -----
 
-  requestToken = async (userId: string): Promise<string> => {
-    const token = OTPService.generateToken(this.tokenLength, "numeric");
+  // ? notifications will be handled in it's own service
+  requestToken = async (
+    id?: string, // userId
+    filter?: QueryFilter<T>,
+    mode: TokenMode = TokenMode.numeric,
+  ): Promise<[string, BaseUser]> => {
+    this.userService.ensureIdOrFilter(id, filter as QueryFilter<InternalUser>);
 
-    const payload: Partial<T> = {};
+    const token = OTPService.generateToken(this.tokenLength, mode);
+
+    const payload: QueryFilter<T> = {};
     this.updatePayloadWithToken(token, payload);
 
-    const id = BaseService.normalizeId(userId);
-    const _user = await this.userService.update(payload, id);
+    const user = await this.userService.update(
+      payload,
+      id,
+      filter as QueryFilter<InternalUser>,
+    );
 
-    return token;
+    return [token, user as BaseUser];
   };
 
   verifyToken = (token: string, user: T): boolean => {
-    const isExpired = user[this.tokenExpiresAtKey] < Date.now();
+    const isExpired = user[this.tokenExpiresAtKey as string] < Date.now();
     if (isExpired)
       throw new ErrorResponse(
         `[Token Validation] Token expired, request another`,
@@ -87,12 +114,23 @@ class OTPService<T extends User = User> {
     return isMatching;
   };
 
-  invalidateToken = async (userId: string): Promise<boolean> => {
-    const payload: Partial<T> = {};
-    this.removeTokenFromPayload(payload);
+  invalidateToken = async (
+    id: string, // userId
+    filter?: QueryFilter<T>,
+  ): Promise<boolean> => {
+    this.userService.ensureIdOrFilter(id, filter as QueryFilter<InternalUser>);
 
-    const id = BaseService.normalizeId(userId);
-    const _user = await this.userService.update(payload, id);
+    // const payload: QueryFilter<T> = {};
+    // this.removeTokenFromPayload(payload);
+
+    const payload = this.getUnsetUpdateQuery();
+
+    const user = await this.userService.update(
+      payload,
+      id,
+      filter as QueryFilter<InternalUser>,
+    );
+    // await user.save();
 
     return true;
   };

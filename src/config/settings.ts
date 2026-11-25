@@ -9,6 +9,8 @@ export const EnvOptions = {
 } as const;
 
 export const Settings = {
+  APP_NAME: "Website Backend",
+
   PORT: Number(process.env.PORT || 5000),
   NODE_ENV: process.env.NODE_ENV || EnvOptions.PROD,
   MONGO_URI: process.env.MONGO_URI,

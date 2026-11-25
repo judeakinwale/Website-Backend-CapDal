@@ -11,6 +11,15 @@ export interface User extends DefaultItem {
   roles: UserRole[];
 
   imageUrl?: string;
+
+  // ----- otps
+  loginToken?: string;
+  loginTokenExpiresAt?: number;
+  resetPasswordToken?: string;
+  resetPasswordTokenExpiresAt?: number;
+  activationToken?: string;
+  activationTokenExpiresAt?: number;
+  // -----
 }
 
 // used in jwt token

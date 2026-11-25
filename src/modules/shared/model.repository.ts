@@ -4,8 +4,10 @@ import type {
   Model,
   ClientSession,
   PopulateOptions,
+  // ObjectId, // is same as mongoose.schema.types.ObjectId and != mongoose.types.ObjectId
   QueryFilter,
   QueryOptions,
+  UpdateQuery,
 } from "mongoose";
 
 export type {
@@ -14,6 +16,7 @@ export type {
   PopulateOptions,
   QueryFilter,
   QueryOptions,
+  UpdateQuery,
 } from "mongoose";
 // -----
 
@@ -80,7 +83,7 @@ export class ModelRepository<T> {
   // -----
   updateOne = async (
     filter: QueryFilter<T>,
-    payload: Partial<T>,
+    payload: UpdateQuery<T>,
     upsert: boolean = false, // create doc, {filter + payload}, if doc matching filter doesn't exist
   ) => {
     const options = upsert ? this.upsertOptions : this.updateOptions;
@@ -90,9 +93,10 @@ export class ModelRepository<T> {
     return updated;
   };
 
-  updateById = async (id: ObjectId, payload: Partial<T>) => {
+  updateById = async (id: ObjectId, payload: UpdateQuery<T>) => {
     const updated = await this.model
-      .findByIdAndUpdate(id, payload, this.updateOptions)
+      .findByIdAndUpdate(id)
+      // .findByIdAndUpdate(id, payload, this.updateOptions)
       .populate(this.populate);
     return updated;
   };

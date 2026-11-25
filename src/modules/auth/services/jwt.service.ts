@@ -21,12 +21,16 @@ class JWTService {
 
   decodeToken = decodeJwt<BaseUser>;
 
-  getTokenUser = (req: Request): BaseUser => {
+  getTokenUser = async (req: Request, verify?: boolean): Promise<BaseUser> => {
     const token = this.getToken(req);
-    const user = this.decodeToken(token);
+    const user = verify
+      ? await this.verifyToken(token)
+      : this.decodeToken(token);
+
     return user;
   };
 
+  // ? exp is a unix timestamp in seconds
   generateToken = async (user: BaseUser): Promise<string> => {
     const secretKey = new TextEncoder().encode(Settings.JWT_SECRET);
 
@@ -54,8 +58,6 @@ class JWTService {
 
     return decoded.payload;
   };
-
-  // invalidateToken = () => {};
 }
 
 export default JWTService;

@@ -1,29 +1,54 @@
 import type { Request, Response, NextFunction } from "express";
 import asyncHandler from "../../../middleware/async";
-import { BaseController } from "../../shared/base.controller";
-import { userService } from "../../cms/dependencies/user.dependencies";
-import ErrorResponse from "../../../utils/errorResponse";
-import { ensureAuthenticatedUser } from "../guards/login.guard";
 import { LoginService } from "../services/login.service";
+import { APIResponse } from "../../shared/base.dto";
 
 export class LoginController {
   constructor(private service: LoginService) {}
 
   login = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      // request: LoginRequest;
-      const user = BaseController.parseUserFromRes(res);
+      const loginData = await this.service.login(req.body);
+
+      const resp: APIResponse = {
+        success: true,
+        data: loginData,
+      };
+      res.status(200).json(resp);
     },
   );
 
   logout = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
-      res.locals.user = undefined;
+      const isLoggedOut = await this.service.logout(res);
+
+      const resp: APIResponse = {
+        success: true,
+        message: "Logout Successful",
+      };
+      res.status(200).json(resp);
     },
   );
 
   me = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const resp = await ensureAuthenticatedUser(req, res, next);
+    const user = await this.service.ensureUser(req);
+
+    const resp: APIResponse = {
+      success: true,
+      data: user,
+    };
     res.status(200).json(resp);
   });
+
+  verifyOTP = asyncHandler(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const loginData = await this.service.verifyOTP(req.body);
+
+      const resp: APIResponse = {
+        success: true,
+        data: loginData,
+      };
+      res.status(200).json(resp);
+    },
+  );
 }

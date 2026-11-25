@@ -5,8 +5,13 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface VerifyOTPRequest {
+  email: string;
+  token: string;
+}
+
 export interface LoginResponse extends User {
   token: string;
-  refreshToken?: string;
-  tokenExpiresAt?: number; // Unix timestamp in seconds
+  refreshToken?: string; // TODO: implement this in login service
+  tokenExpiresAt?: number; // Unix timestamp in ms (js timestamp)
 }
