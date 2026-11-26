@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { Identity, IdentityType } from "../types/identity";
 
 const identitySchema = new mongoose.Schema<Identity>(
@@ -10,7 +14,7 @@ const identitySchema = new mongoose.Schema<Identity>(
     content: { type: String, required: true },
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
 identitySchema.index({ title: "text", content: "text" });

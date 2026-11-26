@@ -55,49 +55,47 @@ class OTPService<T extends User = InternalUser> {
     return token;
   };
 
-  // -----
-  updatePayloadWithToken = (
+  // ----- ? unnecessary generic type K ?
+  updatePayloadWithToken = <K = T>(
     token: string,
     payload: UpdateQuery<T>,
-  ): UpdateQuery<T> => {
+  ): UpdateQuery<K> => {
     payload[this.tokenKey] = token;
     payload[this.tokenExpiresAtKey] = Date.now() + this.expiryMs;
-    return payload;
+    return payload as UpdateQuery<K>;
   };
 
   // ? unused ?
-  removeTokenFromPayload = (payload: UpdateQuery<T>): UpdateQuery<T> => {
+  removeTokenFromPayload = <K = T>(payload: UpdateQuery<T>): UpdateQuery<K> => {
     payload[this.tokenKey] = undefined;
     payload[this.tokenExpiresAtKey] = undefined;
-    return payload;
+    return payload as UpdateQuery<K>;
   };
 
-  getUnsetUpdateQuery = (): UpdateQuery<T> => {
+  // ? mongodb specific
+  getUnsetUpdateQuery = <K = T>(): UpdateQuery<K> => {
     const filter = {
       $set: { [this.tokenKey]: null, [this.tokenExpiresAtKey]: null },
     };
-    return filter as UpdateQuery<T>;
+    return filter as UpdateQuery<K>;
   };
   // -----
 
   // ? notifications will be handled in it's own service
   requestToken = async (
     id?: string, // userId
-    filter?: QueryFilter<T>,
+    filter?: QueryFilter<InternalUser>,
     mode: TokenMode = TokenMode.numeric,
   ): Promise<[string, BaseUser]> => {
-    this.userService.ensureIdOrFilter(id, filter as QueryFilter<InternalUser>);
+    this.userService.ensureIdOrFilter(id, filter);
 
     const token = OTPService.generateToken(this.tokenLength, mode);
 
-    const payload: QueryFilter<T> = {};
-    this.updatePayloadWithToken(token, payload);
+    // const payload: QueryFilter<InternalUser> = {};
+    // this.updatePayloadWithToken(token, payload);
+    const payload = this.updatePayloadWithToken(token, {});
 
-    const user = await this.userService.update(
-      payload,
-      id,
-      filter as QueryFilter<InternalUser>,
-    );
+    const user = await this.userService.update(payload, id, filter);
 
     return [token, user as BaseUser];
   };
@@ -116,23 +114,16 @@ class OTPService<T extends User = InternalUser> {
 
   invalidateToken = async (
     id: string, // userId
-    filter?: QueryFilter<T>,
-  ): Promise<boolean> => {
-    this.userService.ensureIdOrFilter(id, filter as QueryFilter<InternalUser>);
+    filter?: QueryFilter<InternalUser>,
+  ): Promise<[boolean, BaseUser]> => {
+    this.userService.ensureIdOrFilter(id, filter);
 
-    // const payload: QueryFilter<T> = {};
-    // this.removeTokenFromPayload(payload);
-
+    // const payload = this.removeTokenFromPayload<InternalUser>({});
     const payload = this.getUnsetUpdateQuery();
 
-    const user = await this.userService.update(
-      payload,
-      id,
-      filter as QueryFilter<InternalUser>,
-    );
-    // await user.save();
+    const user = await this.userService.update(payload, id, filter);
 
-    return true;
+    return [true, user];
   };
 }
 

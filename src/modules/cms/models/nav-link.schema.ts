@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { NavLink, NavLinkContentDisplay } from "../types/links";
 
 const navLinkSchema = new mongoose.Schema<NavLink>(
@@ -8,10 +12,13 @@ const navLinkSchema = new mongoose.Schema<NavLink>(
     href: String,
     description: String,
     subLinks: [mongoose.Schema.Types.Mixed],
-    contentDisplay: { type: String, enum: Object.values(NavLinkContentDisplay) },
+    contentDisplay: {
+      type: String,
+      enum: Object.values(NavLinkContentDisplay),
+    },
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
 navLinkSchema.index({ title: "text", description: "text" });

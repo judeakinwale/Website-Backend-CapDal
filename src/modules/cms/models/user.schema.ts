@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import {
   actorSchemaSnippet,
   baseSchemaSnippet,
-  timestampOptions,
+  schemaOptions,
 } from "../../../utils/mongoose.utils";
 import { InternalUser, UserRole } from "../../../types/user";
 
@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema<InternalUser>(
     // -----
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
 userSchema.index({ name: "text", email: "text" });

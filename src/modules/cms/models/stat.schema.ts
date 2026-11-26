@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { Stat, StatSection } from "../types/stat";
 
 const statSchema = new mongoose.Schema<Stat>(
@@ -9,7 +13,7 @@ const statSchema = new mongoose.Schema<Stat>(
     section: { type: String, enum: Object.values(StatSection) },
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
 statSchema.index({ title: "text", value: "text" });

@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { Project } from "../types/project";
 
 const projectSchema = new mongoose.Schema<Project>(
@@ -14,10 +18,15 @@ const projectSchema = new mongoose.Schema<Project>(
     completedAt: Date,
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
-projectSchema.index({ title: "text", description: "text", category: "text", location: "text" });
+projectSchema.index({
+  title: "text",
+  description: "text",
+  category: "text",
+  location: "text",
+});
 projectSchema.index({ isFeatured: 1, updatedAt: -1 });
 
 export const MProject = mongoose.model<Project>("Project", projectSchema);

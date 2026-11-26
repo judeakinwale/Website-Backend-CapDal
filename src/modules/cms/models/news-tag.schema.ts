@@ -1,10 +1,14 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { NewsTag } from "../types/news";
 
 const newsTagSchema = new mongoose.Schema<NewsTag>(
   { ...baseSchemaSnippet, ...actorSchemaSnippet },
-  timestampOptions,
+  schemaOptions,
 );
 
 newsTagSchema.index({ title: "text" });

@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { Inquiry } from "../types/inquiry";
 
 const inquirySchema = new mongoose.Schema<Inquiry>(
@@ -12,10 +16,15 @@ const inquirySchema = new mongoose.Schema<Inquiry>(
     message: { type: String, required: true },
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
-inquirySchema.index({ name: "text", email: "text", subject: "text", message: "text" });
+inquirySchema.index({
+  name: "text",
+  email: "text",
+  subject: "text",
+  message: "text",
+});
 inquirySchema.index({ updatedAt: -1 });
 
 export const MInquiry = mongoose.model<Inquiry>("Inquiry", inquirySchema);

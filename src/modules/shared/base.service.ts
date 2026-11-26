@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
 import {
+  DocInstance,
   ModelRepository,
   ObjectId,
   QueryFilter,
@@ -10,16 +10,7 @@ import { updateDocMetadata } from "../../utils/audit.utils";
 import { DefaultItem } from "../../types/default";
 import { BaseUser } from "../../types/user";
 
-type DocResponse<T> = Promise<mongoose.IfAny<
-  T,
-  any,
-  mongoose.Document<unknown, {}, T, {}, mongoose.DefaultSchemaOptions> &
-    mongoose.Require_id<T> & {
-      __v: number;
-    } & mongoose.AddDefaultId<T, {}, mongoose.DefaultSchemaOptions>
-> | null>;
-
-// TODO: add audit logic where needed
+// TODO: add audit logic where needed, connecting with the AuditService in the repo
 export class BaseService<T extends DefaultItem> {
   repo: ModelRepository<T>; // private
   name: string = "Base Service";
@@ -30,11 +21,11 @@ export class BaseService<T extends DefaultItem> {
   }
 
   static normalizeId = (id: ObjectId | string): ObjectId => {
-    if (typeof id === "string") return new mongoose.Types.ObjectId(id);
-    if (!mongoose.isValidObjectId(id))
+    const validId = ModelRepository.getValidId(id);
+    if (!validId)
       throw new ErrorResponse(`[${this.name}] Invalid id provided!`, 400);
 
-    return id;
+    return validId;
   };
 
   private _normalizeId = BaseService.normalizeId;
@@ -55,19 +46,19 @@ export class BaseService<T extends DefaultItem> {
       );
   };
 
-  find = async (filter: QueryFilter<T>): Promise<T[]> => {
+  find = async (filter: QueryFilter<T>): Promise<DocInstance<T>[]> => {
     const items = await this.repo.findAll(filter);
 
-    return items as T[];
+    return items;
   };
 
   findOne = async (
     id?: ObjectId | string,
     filter?: QueryFilter<T>,
-  ): Promise<T> => {
+  ): Promise<DocInstance<T>> => {
     this.ensureIdOrFilter(id, filter);
 
-    let item;
+    let item: DocInstance<T> | null = null;
     if (id) item = await this.repo.findById(this._normalizeId(id));
     if (filter) item = await this.repo.findOne(filter);
 
@@ -81,7 +72,7 @@ export class BaseService<T extends DefaultItem> {
   };
 
   // -----
-  async create(payload: T, user?: BaseUser): Promise<T> {
+  async create(payload: T, user?: BaseUser): Promise<DocInstance<T>> {
     const userId = this.normalizeUserId(user);
     payload = updateDocMetadata<T>(payload, userId);
 
@@ -101,16 +92,45 @@ export class BaseService<T extends DefaultItem> {
     filter?: QueryFilter<T>,
     upsert?: boolean,
     user?: BaseUser,
-  ): Promise<T> {
+  ): Promise<DocInstance<T>> {
     this.ensureIdOrFilter(id, filter);
 
     const userId = this.normalizeUserId(user);
     payload = updateDocMetadata<UpdateQuery<T>>(payload, userId, true);
 
-    let updated;
+    let updated: DocInstance<T> | null = null;
     if (id)
       updated = await this.repo.updateById(this._normalizeId(id), payload);
     if (filter) updated = await this.repo.updateOne(filter, payload, upsert);
+    if (!updated)
+      throw new ErrorResponse(
+        `[${this.name}] Error updating ${this.entityName}!`,
+        400,
+      );
+
+    return updated;
+  }
+
+  async updateWithSave(
+    payload: UpdateQuery<T>,
+    id?: ObjectId | string,
+    filter?: QueryFilter<T>,
+    upsert?: boolean,
+    user?: BaseUser,
+  ): Promise<DocInstance<T>> {
+    this.ensureIdOrFilter(id, filter);
+
+    const userId = this.normalizeUserId(user);
+    payload = updateDocMetadata<UpdateQuery<T>>(payload, userId, true);
+
+    let updated: DocInstance<T> | null = null;
+    if (id)
+      updated = await this.repo.updateByIdWithSave(
+        this._normalizeId(id),
+        payload,
+      );
+    if (filter)
+      updated = await this.repo.updateOneWithSave(filter, payload, upsert);
     if (!updated)
       throw new ErrorResponse(
         `[${this.name}] Error updating ${this.entityName}!`,
@@ -125,12 +145,12 @@ export class BaseService<T extends DefaultItem> {
     id?: ObjectId | string,
     filter?: QueryFilter<T>,
     user?: BaseUser,
-  ): Promise<T> => {
+  ): Promise<DocInstance<T>> => {
     this.ensureIdOrFilter(id, filter);
 
     const userId = this.normalizeUserId(user);
 
-    let deleted;
+    let deleted: DocInstance<T> | null = null;
     if (id) deleted = await this.repo.deleteById(this._normalizeId(id));
     if (filter) deleted = await this.repo.deleteOne(filter);
     if (!deleted)

@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { Timeline } from "../types/timeline";
 
 const timelineSchema = new mongoose.Schema<Timeline>(
@@ -10,7 +14,7 @@ const timelineSchema = new mongoose.Schema<Timeline>(
     content: { type: String, required: true },
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
 timelineSchema.index({ title: "text", content: "text", year: "text" });

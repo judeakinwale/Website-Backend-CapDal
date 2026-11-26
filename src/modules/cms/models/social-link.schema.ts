@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { SocialLink } from "../types/links";
 
 const socialLinkSchema = new mongoose.Schema<SocialLink>(
@@ -8,10 +12,13 @@ const socialLinkSchema = new mongoose.Schema<SocialLink>(
     href: { type: String, required: true },
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
 socialLinkSchema.index({ title: "text", href: "text" });
 socialLinkSchema.index({ updatedAt: -1 });
 
-export const MSocialLink = mongoose.model<SocialLink>("SocialLink", socialLinkSchema);
+export const MSocialLink = mongoose.model<SocialLink>(
+  "SocialLink",
+  socialLinkSchema,
+);

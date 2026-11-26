@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { News } from "../types/news";
 
 const newsSchema = new mongoose.Schema<News>(
@@ -12,10 +16,15 @@ const newsSchema = new mongoose.Schema<News>(
     publishedAt: Date,
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
-newsSchema.index({ title: "text", body: "text", category: "text", tag: "text" });
+newsSchema.index({
+  title: "text",
+  body: "text",
+  category: "text",
+  tag: "text",
+});
 newsSchema.index({ publishedAt: -1, updatedAt: -1 });
 
 export const MNews = mongoose.model<News>("News", newsSchema);

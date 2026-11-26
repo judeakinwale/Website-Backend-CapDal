@@ -49,7 +49,7 @@ export class RegisterController {
 
       const resp: APIResponse = {
         success: true,
-        data: requestData,
+        message: "Activation token notification sent!",
       };
       res.status(200).json(resp);
     },

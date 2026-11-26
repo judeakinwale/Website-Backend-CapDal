@@ -93,7 +93,7 @@ export class LoginService {
 
     const isMatch = this.otp.verifyToken(token, user);
     if (!isMatch)
-      throw new ErrorResponse(`[Token Validation] Invalid token provided`, 400);
+      throw new ErrorResponse(`[${this.name}] Invalid token provided`, 400);
 
     await this.otp.invalidateToken(user.id);
     const loginData = await this.generateLoginResponse(user);

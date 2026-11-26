@@ -13,7 +13,10 @@ export interface ForgotPasswordRequest {
   email: string;
 }
 
-export interface ResetPasswordRequest extends VerifyOTPRequest {}
+export interface ResetPasswordRequest extends VerifyOTPRequest {
+  password: string;
+  confirmPassword?: string;
+}
 export interface ResetPasswordResponse extends LoginResponse {}
 
 export interface VerifyActivationRequest extends VerifyOTPRequest {}

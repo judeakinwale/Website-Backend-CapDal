@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import {
   actorSchemaSnippet,
   baseSchemaSnippet,
-  timestampOptions,
+  schemaOptions,
 } from "../../../utils/mongoose.utils";
 import { Certificate } from "../types/certificate";
 
@@ -11,7 +11,7 @@ const certificateSchema = new mongoose.Schema<Certificate>(
     ...baseSchemaSnippet,
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
 certificateSchema.index({ value: "text" });

@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { actorSchemaSnippet, baseSchemaSnippet, timestampOptions } from "../../../utils/mongoose.utils";
+import {
+  actorSchemaSnippet,
+  baseSchemaSnippet,
+  schemaOptions,
+} from "../../../utils/mongoose.utils";
 import { Director } from "../types/director";
 
 const directorSchema = new mongoose.Schema<Director>(
@@ -12,7 +16,7 @@ const directorSchema = new mongoose.Schema<Director>(
     link: String,
     ...actorSchemaSnippet,
   },
-  timestampOptions,
+  schemaOptions,
 );
 
 directorSchema.index({ name: "text", title: "text", summary: "text" });
